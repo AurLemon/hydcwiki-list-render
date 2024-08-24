@@ -3,10 +3,12 @@ const { defineConfig } = require("@vue/cli-service");
 module.exports = defineConfig({
     productionSourceMap: false,
     transpileDependencies: true,
+    publicPath: '/static/list/',
 
     configureWebpack: {
         optimization: {
             splitChunks: false,
+            runtimeChunk: false
         },
         output: {
             filename: "bundle.js",
@@ -14,9 +16,7 @@ module.exports = defineConfig({
     },
 
     css: {
-        extract: {
-            filename: "styles.css",
-        },
+        extract: process.env.NODE_ENV === 'production' ? { filename: "styles.css" } : false,
     },
 
     devServer: {

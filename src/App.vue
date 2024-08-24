@@ -1,30 +1,11 @@
 <template>
     <div id="app">
-        <div class="hydcwiki-list">
-            <table class="wikitable">
-                <tbody>
-                    <tr>
-                        <th>PIIC</th>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Join Time</th>
-                        <th>Status</th>
-                    </tr>
-                    <tr v-for="player in players" :key="player.piic">
-                        <td>{{ player.piic }}</td>
-                        <td>{{ player.nick }}</td>
-                        <td>{{ player.type }}</td>
-                        <td>{{ player.jointime }}</td>
-                        <td>{{ player.status }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <TableContainer />
     </div>
 </template>
 
 <script>
-    import { get } from '@/api'
+    import TableContainer from '@/components/TableContainer.vue'
 
     export default {
         name: 'App',
@@ -33,21 +14,40 @@
                 players: []
             }
         },
-        methods: {
-            async fetchPlayerList() {
-                try {
-                    const response = await get('/info/list/player');
-                    this.players = response.data.data.list;
-                } catch (error) {
-                    console.error('Error fetching player data:', error);
-                }
-            }        
-        },
-        created() {
-            this.fetchPlayerList();
+        components: {
+            TableContainer
         }
     }
 </script>
 
 <style lang="scss" scoped>
+    @font-face {
+        font-family: "Site Wordmark Font";
+        src: url("https://h2-1254268741.cos.ap-shanghai.myqcloud.com/font/Site_Wordmark_Font.woff2") format('woff2');
+    }
+
+    @font-face {
+        font-family: "Minecraft";
+        src: url("https://h2-1254268741.cos.ap-shanghai.myqcloud.com/font/Minecraft_Regular.woff2") format('woff2');
+    }
+
+    @font-face {
+        font-family: "JetBrains Mono";
+        src: url("https://h2-1254268741.cos.ap-shanghai.myqcloud.com/font/JetBrains_Mono.woff2") format('woff2');
+    }
+
+    @font-face {
+        font-family: "MiSans Latin";
+        src: url("https://h2-1254268741.cos.ap-shanghai.myqcloud.com/font/MiSans_Latin.woff2") format('woff2');
+    }
+
+    @font-face {
+        font-family: "Inter";
+        src: url("https://h2-1254268741.cos.ap-shanghai.myqcloud.com/font/Inter.woff2") format('woff2');
+    }
+
+    @font-face {
+        font-family: "Oswald";
+        src: url("https://h2-1254268741.cos.ap-shanghai.myqcloud.com/font/Oswald_Regular.woff2") format('woff2');
+    }
 </style>
