@@ -1,20 +1,31 @@
-const { defineConfig } = require('@vue/cli-service');
+const { defineConfig } = require("@vue/cli-service");
 
 module.exports = defineConfig({
-  transpileDependencies: true,
-  
-  configureWebpack: {
-    optimization: {
-      splitChunks: false, // 禁用代码拆分
+    productionSourceMap: false,
+    transpileDependencies: true,
+
+    configureWebpack: {
+        optimization: {
+            splitChunks: false,
+        },
+        output: {
+            filename: "bundle.js",
+        },
     },
-    output: {
-      filename: 'bundle.js', // 生成一个 JS 文件
-    }
-  },
-  
-  css: {
-    extract: {
-      filename: 'styles.css', // 将 CSS 提取到一个文件中
+
+    css: {
+        extract: {
+            filename: "styles.css",
+        },
     },
-  },
+
+    devServer: {
+        proxy: {
+            "/api": {
+                target: "https://api.hydcraft.cn",
+                changeOrigin: true,
+                pathRewrite: { "^/api": "" },
+            },
+        },
+    },
 });

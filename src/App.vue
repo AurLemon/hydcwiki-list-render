@@ -1,28 +1,53 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+    <div id="app">
+        <div class="hydcwiki-list">
+            <table class="wikitable">
+                <tbody>
+                    <tr>
+                        <th>PIIC</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Join Time</th>
+                        <th>Status</th>
+                    </tr>
+                    <tr v-for="player in players" :key="player.piic">
+                        <td>{{ player.piic }}</td>
+                        <td>{{ player.nick }}</td>
+                        <td>{{ player.type }}</td>
+                        <td>{{ player.jointime }}</td>
+                        <td>{{ player.status }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+    import { get } from '@/api'
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+    export default {
+        name: 'App',
+        data() {
+            return {
+                players: []
+            }
+        },
+        methods: {
+            async fetchPlayerList() {
+                try {
+                    const response = await get('/info/list/player');
+                    this.players = response.data.data.list;
+                } catch (error) {
+                    console.error('Error fetching player data:', error);
+                }
+            }        
+        },
+        created() {
+            this.fetchPlayerList();
+        }
+    }
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+<style lang="scss" scoped>
 </style>
