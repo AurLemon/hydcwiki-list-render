@@ -7,8 +7,8 @@
 <script>
     /* eslint-disable */
 
-    import PlayerList from '@/components/PlayerList.vue';
-    import EnterpriseList from '@/components/EnterpriseList.vue';
+    import PlayerList from '@/components/list/player/PlayerList.vue';
+    import EnterpriseList from '@/components/list/enterprise/EnterpriseList.vue';
 
     export default {
         name: 'TableContainer',

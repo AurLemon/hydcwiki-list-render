@@ -3829,3 +3829,77 @@ span.subpages {
         padding: 1em 0
     }
 }
+
+:root {
+	--font-family-citizen-base: "Inter";
+	--font-family-citizen-monospace: "JetBrains Mono";
+	--color-primary__h: 200;
+	--color-primary__s: 55%;
+	--color-primary__l: 48%;
+    --color-surface-0__s: 3%;
+    --color-surface-0__l: 98%;
+    --color-surface-1__s: 3%;
+    --color-surface-1__l: 98%;
+    --color-surface-2__s: 10%;
+    --color-surface-2__l: 95%;
+    --color-surface-3__s: 10%;
+    --color-surface-3__l: 85%;
+    --color-surface-4__s: 10%;
+    --color-surface-4__l: 74%;
+	--background-color-overlay: hsla(var(--color-primary__h), 3%, 98%, 0.95);
+	--background-color-overlay--lighter: hsla(var(--color-primary__h), 3%, 98%, 0.6);
+}
+
+:root {
+	--h2-font-family: "Inter", "MiSans Latin", "Helvetica Neue", "Helvetica", "Roboto", "BlinkMacSystemFont", "MiSans", "HarmonyOS Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+	--citizen-default-color: hsl(220, 60%, 50%);
+	--h2-color-light: var(--color-primary__h), var(--color-surface-0__s), var(--color-surface-0__l);
+	--h2-color-dark: var(--color-primary__h), 20%, 10%;
+}
+
+:root {
+	--h2-bgColor-light--0: hsla(var(--h2-color-light), .1);
+	--h2-bgColor-light--0-active: hsla(var(--h2-color-light), .05);
+	--h2-bgColor-light--1: hsla(var(--h2-color-light), .3);
+	--h2-bgColor-light--2: hsla(var(--h2-color-light), .6);
+	--h2-bgColor-light--2-hover: hsla(var(--h2-color-light), .5);
+	--h2-bgColor-light--3: hsla(var(--h2-color-light), .75);
+	--h2-bgColor-light--4: hsla(var(--h2-color-light), .9);
+	--h2-bgColor-dark--0: hsla(var(--h2-color-dark), .1);
+	--h2-bgColor-dark--1: hsla(var(--h2-color-dark), .3);
+	--h2-bgColor-dark--2: hsla(var(--h2-color-dark), .6);
+    --h2-shadow--0: 2px 2px 4px 1px rgba(0, 0, 0, .04), -2px -2px 6px 0px rgba(0, 0, 0, .03);
+	--h2-textShadow--0: 1px 1px 2px #a9a9a9;
+	--h2-textShadow--1: 1px 1px 2px #545454;
+	--h2-mp-card-hover--0: hsl(204, 100%, 88%);
+	--h2-mp-card--border-radius: 10px;
+	--h2-mp-card--padding: 15px;
+	--h2-mp-gap-value: 0.625rem;
+}
+
+:root.skin-theme-clientpref-night {
+	--h2-color-light: var(--color-primary__h), 20%, 10%;
+	--h2-color-dark: var(--color-primary__h), 3%, 98%;
+	--h2-mp-card-hover--0: hsl(204, 70%, 58%);
+}
+
+@media screen and (prefers-color-scheme: dark) {
+	:root.skin-theme-clientpref-os {
+		--h2-color-light: var(--color-primary__h), 20%, 10%;
+		--h2-color-dark: var(--color-primary__h), 3%, 98%;
+		--h2-mp-card-hover--0: hsl(204, 70%, 58%);
+	}
+}
+
+::selection {
+    background: hsla(var(--color-primary__h), 5%, 54%, 22%);
+}
+
+* {
+	scrollbar-color: var(--color-surface-4) transparent;
+	scrollbar-width: thin;
+}
+
+body {
+	font-family: var(--h2-font-family) !important;
+}
