@@ -52,9 +52,10 @@
         $tooltip-color-background: var(--h2-bgColor-light--2);
 
         &.light-modern-theme {
-            color: var(--color-base);
-            padding: 4px 10px;
+            color: var(--color-base--subtle);
+            padding: 6px 14px;
             border: 1px solid var(--border-color-subtle);
+            border-radius: 24px;
             background-color: $tooltip-color-background !important;
             box-shadow: var(--box-shadow-card);
             backdrop-filter: blur(16px);
@@ -66,6 +67,10 @@
 
         .tippy-arrow {
             border-bottom: 8px solid $tooltip-color-background !important;
+        }
+
+        .tippy-content {
+            word-break: normal;
         }
 
         &.none-theme {

@@ -2,6 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 import axios from 'axios'
 
+import VueClipboard from 'vue-clipboard2'
 import 'material-icons/iconfont/filled.css'
 import VueTippy from 'vue-tippy'
 import 'tippy.js/themes/light.css'
@@ -14,6 +15,8 @@ Vue.use(VueTippy, {
     directive: 'tippy',
     theme: 'light-modern'
 });
+
+Vue.use(VueClipboard);
 
 Vue.prototype.$axios = axios;
 Vue.config.productionTip = false

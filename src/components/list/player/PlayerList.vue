@@ -3,11 +3,33 @@
         <table class="hydcwiki-player-table tablelist wikitable">
             <tbody>
                 <tr class="hydcwiki-player-table-head">
-                    <th class="hydcwiki-player-table-head__index">次序</th>
-                    <th class="hydcwiki-player-table-head__info">信息</th>
-                    <th class="hydcwiki-player-table-head__status">状态</th>
-                    <th class="hydcwiki-player-table-head__time">入服时间</th>
-                    <th class="hydcwiki-player-table-head__contact">联系方式</th>
+                    <th class="hydcwiki-player-table-head__index">
+                        <div class="hydcwiki-player-table-wrapper">
+                            次序
+                            <span class="material-icons"
+                                content="次序是数据库中的默认排序编号，以入服日期为排序依据。"
+                                v-tippy="{ placement: 'left', interactive: true }"
+                            >info</span>
+                        </div>
+                    </th>
+                    <th class="hydcwiki-player-table-head__info">
+                        <div class="hydcwiki-player-table-wrapper">信息</div>
+                    </th>
+                    <th class="hydcwiki-player-table-head__status">
+                        <div class="hydcwiki-player-table-wrapper">
+                            状态
+                            <span class="material-icons"
+                                content="状态包含玩家类型、玩家状态和玩家权限组与玩家编号（PIIC）。"
+                                v-tippy="{ placement: 'left', interactive: true }"
+                            >info</span>
+                        </div>
+                    </th>
+                    <th class="hydcwiki-player-table-head__time">
+                        <div class="hydcwiki-player-table-wrapper">入服时间</div>
+                    </th>
+                    <th class="hydcwiki-player-table-head__contact">
+                        <div class="hydcwiki-player-table-wrapper">联系方式</div>
+                    </th>
                 </tr>
                 <tr class="hydcwiki-player-table-content" v-for="(player, index) in players" :key="player.piic">
                     <td class="hydcwiki-player-table__index">{{ index + 1 }}</td>
@@ -23,7 +45,10 @@
                             </div>
                             <div class="hydcwiki-player-table__name">
                                 <div class="hydcwiki-player-table__nick">{{ player.nick }}</div>
-                                <div class="hydcwiki-player-table__id">{{ player.id }}</div>
+                                <div class="hydcwiki-player-table__id">
+                                    {{ player.id }}
+                                    <CopyButton :textToCopy="player.id" />
+                                </div>
                             </div>
                         </div>
                     </td>
@@ -36,9 +61,16 @@
                                 </div>
                                 <div class="hydcwiki-player-table__playerstatus" 
                                     v-if="!(player.status === 0)"
+                                    :class="{
+                                        pointer: (player.status === 2 || player.status === 3) &&
+                                        player.leave_reason !== null
+                                    }"
                                     :content="player.leave_reason"
                                     v-tippy="
-                                        ( player.status === 2 && player.leave_reason !== null ) ? 
+                                        (
+                                            (player.status === 2 || player.status === 3) &&
+                                            player.leave_reason !== null 
+                                        ) ? 
                                         { appendTo: 'parent', placement: 'bottom', interactive: true } :
                                         { appendTo: 'parent', theme: 'none', trigger: 'manual' }
                                     ">
@@ -50,9 +82,18 @@
                                 </div>
                             </div>
                             <div class="hydcwiki-player-table__code">
-                                <div :class="`hydcwiki-player-table__pergroup ${getPerGroupClass(player.per_group)}`">{{ executePerGroup(player.per_group) }}</div>
+                                <div :class="`hydcwiki-player-table__pergroup ${getPerGroupClass(player.per_group)}`"
+                                    content="玩家权限组"
+                                    v-tippy="{ appendTo: 'parent', placement: 'bottom', interactive: true }"
+                                >{{ executePerGroup(player.per_group) }}</div>
                                 <div class="dot"></div>
-                                <div class="hydcwiki-player-table__piic">{{ player.piic }}</div>
+                                <div class="hydcwiki-player-table__piic"
+                                    content="玩家身份标识编码（PIIC）"
+                                    v-tippy="{ appendTo: 'parent', placement: 'bottom', interactive: true }"
+                                >
+                                    {{ player.piic }}
+                                    <CopyButton :textToCopy="player.piic" />
+                                </div>
                             </div>
                         </div>
                     </td>
@@ -61,7 +102,7 @@
                             <div class="diff"
                                 content="在服内待过的时间"
                                 v-tippy="{ appendTo: 'parent', interactive: true }"
-                            >{{ differenceInDays(player.jointime, serverTimestamp) }}</div>
+                            >{{ differenceInDays(player.jointime, player.leavetime) }}</div>
                             <div class="time-wrapper">
                                 <div class="hydcwiki-player-table__jointime">{{ player.jointime }}</div>
                                 <div class="hydcwiki-player-table__leavetime">{{ player.leavetime }}</div>
@@ -71,8 +112,13 @@
                             <div class="diff"
                                 content="到今天的天数"
                                 v-tippy="{ appendTo: 'parent', interactive: true }"
-                            >{{ differenceInDays(player.jointime, serverTimestamp) }}</div>
+                            >{{ differenceInDays(player.jointime, serverDate) }}</div>
                             <div class="hydcwiki-player-table__jointime">{{ player.jointime }}</div>
+                        </div>
+                    </td>
+                    <td class="hydcwiki-player-table__contact">
+                        <div class="hydcwiki-player-table-wrapper">
+
                         </div>
                     </td>
                 </tr>
@@ -85,6 +131,8 @@
     import dayjs from 'dayjs'
     import { get } from '@/api'
 
+    import CopyButton from '@/components/common/CopyButton.vue'
+
     export default {
         data() {
             return {
@@ -92,11 +140,14 @@
                 players: []
             }
         },
+        components: {
+            CopyButton
+        },
         methods: {
             async fetchPlayerList() {
                 try {
-                    const response = await get('/info/list/player');
-                    this.serverDate = dayjs(response.data.timestamp).format('YYYY-MM-DD');
+                    const response = await get('/info/list/player?limit=300');
+                    this.serverDate = dayjs(response.data.timestamp * 1000).format('YYYY-MM-DD');
                     this.players = response.data.data.list;
                 } catch (error) {
                     console.error('Error fetching player data:', error);
@@ -252,6 +303,22 @@
         --color-player-list-islogged: #008000;
 
         .hydcwiki-player-table-head {
+            [class^="hydcwiki-player-table-head__"] {
+                .hydcwiki-player-table-wrapper {
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                }
+
+                .material-icons {
+                    display: block;
+                    color: var(--color-base);
+                    font-size: 14px;
+                    opacity: 0.3;
+                    cursor: pointer;
+                }
+            }
+
             .hydcwiki-player-table-head__index {
                 text-align: center;
             }
@@ -285,7 +352,7 @@
                 }
                 
                 .hydcwiki-player-table__islogged {
-                    $status-value-length: 10px;
+                    $status-value-length: 12px;
                     $status-value-offset: 4px;
                     position: absolute;
                     right: -($status-value-offset);
@@ -295,6 +362,7 @@
                     height: $status-value-length;
                     background-color: var(--color-player-list-islogged);
                     border-radius: 50%;
+                    cursor: pointer;
                 }
             }
 
@@ -303,6 +371,14 @@
                     display: flex;
                     align-items: center;
                     gap: 1rem;
+
+                    &:hover {
+                        .hydcwiki-player-table__id {
+                            .copy-button {
+                                opacity: 1;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -312,14 +388,23 @@
             }
 
             .hydcwiki-player-table__id {
+                display: flex;
+                align-items: center;
+                gap: 4px;
                 font-size: 22px;
                 font-family: 'Minecraft';
+                user-select: none;
+
+                .copy-button {
+                    opacity: 0;
+                }
             }
 
             .hydcwiki-player-table__status {
                 .hydcwiki-player-table-wrapper {
                     display: flex;
                     gap: 10px;
+                    user-select: none;
                 }
             }
 
@@ -386,6 +471,10 @@
                         color: var(--color-player-list-status-hibernate);
                     }
                 }
+
+                &.pointer {
+                    cursor: pointer;
+                }
             }
 
             .hydcwiki-player-table__playertype {
@@ -425,10 +514,20 @@
                         content: '•';
                     }
                 }
+
+                &:hover {
+                    .hydcwiki-player-table__piic {
+                        .copy-button {
+                            opacity: 0.8;
+                            left: calc(100% + 12px);
+                        }
+                    }
+                }
             }
 
             .hydcwiki-player-table__pergroup {
                 font-weight: bold;
+                cursor: pointer;
 
                 &.level-0 {
                     color: var(--color-player-list-pergroup-level-0);
@@ -448,7 +547,7 @@
 
                 &.none {
                     color: var(--color-base--subtle);
-                    opacity: 0.5;
+                    opacity: 0.7;
                 }
 
                 &.default {
@@ -457,7 +556,23 @@
             }
 
             .hydcwiki-player-table__piic {
+                display: flex;
+                align-items: center;
                 font-family: 'JetBrains Mono';
+                position: relative;
+                cursor: pointer;
+
+                .copy-button {
+                    color: var(--color-surface-0);
+                    font-size: 14px;
+                    padding: 4px;
+                    border-radius: 50%;
+                    background: var(--color-base--subtle);
+                    position: absolute;
+                    left: calc(100% + 0px);
+                    opacity: 0;
+                    transition: opacity 250ms ease, left 300ms ease;
+                }
             }
 
             .hydcwiki-player-table__time {
@@ -474,6 +589,7 @@
                         padding: 2px 4px;
                         border-radius: var(--border-radius--pill);
                         background-color: var(--color-primary);
+                        cursor: pointer;
                     }
 
                     &.both .diff {
@@ -481,6 +597,14 @@
                     }
                 }
             }
+        }
+    }
+</style>
+
+<style lang="scss">
+    .tippy-tooltip {
+        &.light-modern-theme {
+            max-width: 400px !important;
         }
     }
 </style>
