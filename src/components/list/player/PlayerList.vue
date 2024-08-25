@@ -6,14 +6,19 @@
                     <th class="hydcwiki-player-table-head__index">次序</th>
                     <th class="hydcwiki-player-table-head__info">信息</th>
                     <th class="hydcwiki-player-table-head__status">状态</th>
-                    <th class="hydcwiki-player-table-head__time">时间</th>
+                    <th class="hydcwiki-player-table-head__time">入服时间</th>
+                    <th class="hydcwiki-player-table-head__contact">联系方式</th>
                 </tr>
                 <tr class="hydcwiki-player-table-content" v-for="(player, index) in players" :key="player.piic">
                     <td class="hydcwiki-player-table__index">{{ index + 1 }}</td>
                     <td class="hydcwiki-player-table__info">
                         <div class="hydcwiki-player-table-wrapper">
-                            <div class="hydcwiki-player-table__islogged" alt="在线" v-if="player.is_logged"></div>
                             <div class="hydcwiki-player-table__avatar">
+                                <div class="hydcwiki-player-table__islogged" v-if="player.is_logged"
+                                    :content="`在线（最近一次登录：${ formatDate(player.lastlogin === null ? '未知' : player.lastlogin) }）`"
+                                    v-tippy="{ placement: 'left', interactive: true }"
+                                >
+                                </div>
                                 <img :src="`https://minotar.net/helm/${ player.id }`">
                             </div>
                             <div class="hydcwiki-player-table__name">
@@ -29,7 +34,14 @@
                                     <div :class="`type ${getTypeClass(player.type)}`"></div>
                                     <div class="text">{{ executeType(player.type) }}</div>
                                 </div>
-                                <div class="hydcwiki-player-table__playerstatus" v-if="!(player.status === 0)">
+                                <div class="hydcwiki-player-table__playerstatus" 
+                                    v-if="!(player.status === 0)"
+                                    :content="player.leave_reason"
+                                    v-tippy="
+                                        ( player.status === 2 && player.leave_reason !== null ) ? 
+                                        { appendTo: 'parent', placement: 'bottom', interactive: true } :
+                                        { appendTo: 'parent', theme: 'none', trigger: 'manual' }
+                                    ">
                                     <div :class="`status ${getStatusClass(player.status)}`" v-if="player.status === 2 || player.status === 3"></div>
                                     <div class="icon" v-if="!(player.status === 2 || player.status === 3)">
                                         <span :class="`material-icons ${getStatusClass(player.status)}`">{{ getStatusIcon(player.status) }}</span>
@@ -44,7 +56,25 @@
                             </div>
                         </div>
                     </td>
-                    <td class="hydcwiki-player-table__time">{{ player.jointime }}</td>
+                    <td class="hydcwiki-player-table__time">
+                        <div class="hydcwiki-player-table-wrapper both" v-if="player.leavetime !== null">
+                            <div class="diff"
+                                content="在服内待过的时间"
+                                v-tippy="{ appendTo: 'parent', interactive: true }"
+                            >{{ differenceInDays(player.jointime, serverTimestamp) }}</div>
+                            <div class="time-wrapper">
+                                <div class="hydcwiki-player-table__jointime">{{ player.jointime }}</div>
+                                <div class="hydcwiki-player-table__leavetime">{{ player.leavetime }}</div>
+                            </div>
+                        </div>
+                        <div class="hydcwiki-player-table-wrapper" v-else>
+                            <div class="diff"
+                                content="到今天的天数"
+                                v-tippy="{ appendTo: 'parent', interactive: true }"
+                            >{{ differenceInDays(player.jointime, serverTimestamp) }}</div>
+                            <div class="hydcwiki-player-table__jointime">{{ player.jointime }}</div>
+                        </div>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -52,11 +82,13 @@
 </template>
 
 <script>
+    import dayjs from 'dayjs'
     import { get } from '@/api'
 
     export default {
         data() {
             return {
+                serverDate: null,
                 players: []
             }
         },
@@ -64,10 +96,20 @@
             async fetchPlayerList() {
                 try {
                     const response = await get('/info/list/player');
+                    this.serverDate = dayjs(response.data.timestamp).format('YYYY-MM-DD');
                     this.players = response.data.data.list;
                 } catch (error) {
                     console.error('Error fetching player data:', error);
                 }
+            },
+            formatDate(timestamp) {
+                if (timestamp === null) 
+                    return null;
+
+                return dayjs(timestamp).format('YYYY-MM-DD HH:mm:ss');
+            },
+            differenceInDays(date1, date2) {
+                return dayjs(date2).diff(dayjs(date1), 'day');
             },
             executeType(type) {
                 switch(type) {
@@ -126,7 +168,7 @@
                     case 0:
                         return 'hdr_weak';
                     case 1:
-                        return 'heart_broken';
+                        return 'how_to_reg';
                     case 2:
                         return 'delete_outline';
                     case 3:
@@ -197,13 +239,13 @@
         --color-player-list-type-unconfirm: #efc51b;
 
         --color-player-list-status-regular: #0fda7f;
-        --color-player-list-status-active: #e01482;
+        --color-player-list-status-active: #3791be;
         --color-player-list-status-leave: #fc7985;
         --color-player-list-status-kick: #af1a1a;
-        --color-player-list-status-hibernate: #41dcff;
+        --color-player-list-status-hibernate: #3791be;
 
-        --color-player-list-pergroup-level-0: #fb5454;
-        --color-player-list-pergroup-level-1: #009999;
+        --color-player-list-pergroup-level-0: #c41111;
+        --color-player-list-pergroup-level-1: #3791be;
         --color-player-list-pergroup-level-2: #3366cc;
         --color-player-list-pergroup-level-3: #1a8d00;
 
@@ -226,12 +268,33 @@
             }
 
             .hydcwiki-player-table__avatar {
+                position: relative;
+
                 img {
                     $avatar-value-length: 40px;
                     display: block;
                     width: $avatar-value-length;
                     height: $avatar-value-length;
                     border-radius: 4px;
+                    transition: filter 300ms ease, transform 300ms ease;
+
+                    &:hover {
+                        filter: saturate(4) brightness(1.25);
+                        transform: rotate(-10deg);
+                    }
+                }
+                
+                .hydcwiki-player-table__islogged {
+                    $status-value-length: 10px;
+                    $status-value-offset: 4px;
+                    position: absolute;
+                    right: -($status-value-offset);
+                    bottom: -($status-value-offset);
+                    z-index: 10;
+                    width: $status-value-length;
+                    height: $status-value-length;
+                    background-color: var(--color-player-list-islogged);
+                    border-radius: 50%;
                 }
             }
 
@@ -240,17 +303,6 @@
                     display: flex;
                     align-items: center;
                     gap: 1rem;
-                    position: relative;
-
-                    .hydcwiki-player-table__islogged {
-                        $status-value-length: 10px;
-                        position: absolute;
-                        left: -($status-value-length + 7px);
-                        width: $status-value-length;
-                        height: $status-value-length;
-                        background-color: var(--color-player-list-islogged);
-                        border-radius: 50%;
-                    }
                 }
             }
 
@@ -406,6 +458,28 @@
 
             .hydcwiki-player-table__piic {
                 font-family: 'JetBrains Mono';
+            }
+
+            .hydcwiki-player-table__time {
+                white-space: nowrap;
+
+                .hydcwiki-player-table-wrapper {
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+
+                    .diff {
+                        color: var(--color-surface-0);
+                        font-size: 10px;
+                        padding: 2px 4px;
+                        border-radius: var(--border-radius--pill);
+                        background-color: var(--color-primary);
+                    }
+
+                    &.both .diff {
+                        background-color: var(--color-player-list-status-leave);
+                    }
+                }
             }
         }
     }

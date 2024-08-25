@@ -7,6 +7,36 @@
 
         th, td {
             border-top: 0;
+            word-break: keep-all;
+        }
+
+        th {
+            color: var(--color-base--subtle);
+            font-size: 13px;
+            padding: var(--space-xxs) var(--space-xs);
+            background: var(--color-surface-2);
+
+            &:first-child {
+                border-top-left-radius: var(--border-radius--pill) !important;
+                border-bottom-left-radius: var(--border-radius--pill) !important;
+            }
+    
+            &:last-child{
+                border-top-right-radius: var(--border-radius--pill) !important;
+                border-bottom-right-radius: var(--border-radius--pill) !important;
+            }
+        }
+
+        td {
+            &:first-child {
+                border-top-left-radius: var(--border-radius--medium) !important;
+                border-bottom-left-radius: var(--border-radius--medium) !important;
+            }
+
+            &:last-child {
+                border-top-right-radius: var(--border-radius--medium) !important;
+                border-bottom-right-radius: var(--border-radius--medium) !important;
+            }
         }
     }
 }

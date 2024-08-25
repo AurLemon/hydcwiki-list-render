@@ -9,11 +9,6 @@
 
     export default {
         name: 'App',
-        data() {
-            return {
-                players: []
-            }
-        },
         components: {
             TableContainer
         }
@@ -49,5 +44,32 @@
     @font-face {
         font-family: "Oswald";
         src: url("https://h2-1254268741.cos.ap-shanghai.myqcloud.com/font/Oswald_Regular.woff2") format('woff2');
+    }
+</style>
+
+<style lang="scss">
+    .tippy-tooltip {
+        $tooltip-color-background: var(--h2-bgColor-light--2);
+
+        &.light-modern-theme {
+            color: var(--color-base);
+            padding: 4px 10px;
+            border: 1px solid var(--border-color-subtle);
+            background-color: $tooltip-color-background !important;
+            box-shadow: var(--box-shadow-card);
+            backdrop-filter: blur(16px);
+        }
+
+        .tippy-backdrop {
+            background-color: $tooltip-color-background !important;
+        }
+
+        .tippy-arrow {
+            border-bottom: 8px solid $tooltip-color-background !important;
+        }
+
+        &.none-theme {
+            display: none;
+        }
     }
 </style>
