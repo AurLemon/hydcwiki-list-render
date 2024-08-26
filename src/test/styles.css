@@ -3903,3 +3903,8 @@ span.subpages {
 body {
 	font-family: var(--h2-font-family) !important;
 }
+
+#app {
+    width: 1080px;
+    margin: 0 auto;
+}

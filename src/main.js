@@ -24,3 +24,5 @@ Vue.config.productionTip = false;
 new Vue({
     render: h => h(App),
 }).$mount('#app');
+
+console.info('List Render Script v1.0.0 Designed by AurLemon based on Vue.js 2');

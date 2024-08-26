@@ -1,5 +1,5 @@
 <template>
-    <div class="hydcwiki-player-list">
+    <div class="hydcwiki-list-table">
         <table class="hydcwiki-player-table tablelist wikitable">
             <tbody>
                 <tr class="hydcwiki-player-table-head">
@@ -31,11 +31,11 @@
                         <div class="hydcwiki-player-table-wrapper">联系方式</div>
                     </th>
                 </tr>
-                <tr class="hydcwiki-player-table-content" v-for="(player, index) in players" :key="player.piic">
-                    <td class="hydcwiki-player-table__index">{{ index + 1 }}</td>
+                <tr class="hydcwiki-player-table-content" v-for="player in players" :key="player.piic">
+                    <td class="hydcwiki-player-table__index">{{ player.index }}</td>
                     <td class="hydcwiki-player-table__info">
                         <div class="hydcwiki-player-table-wrapper">
-                            <div class="hydcwiki-player-table__avatar">
+                            <div class="hydcwiki-player-table__avatar" @click="changeSkin(player.id)">
                                 <div class="hydcwiki-player-table__islogged" v-if="player.is_logged"
                                     :content="`在线（最近一次登录：${ formatDate(player.lastlogin === null ? '未知' : player.lastlogin) }）`"
                                     v-tippy="{ placement: 'left', interactive: true }"
@@ -155,13 +155,16 @@
     import dayjs from 'dayjs'
     import { get } from '@/api'
 
+    import { EventBus } from '@/services/player/event-bus'
     import CopyButton from '@/components/common/CopyButton.vue'
 
     export default {
         data() {
             return {
                 serverDate: null,
-                players: []
+                players: [],
+                response: {},
+                receivedData: {}
             }
         },
         components: {
@@ -173,6 +176,8 @@
                     const response = await get('/info/list/player');
                     this.serverDate = dayjs(response.data.timestamp * 1000).format('YYYY-MM-DD');
                     this.players = response.data.data.list;
+                    this.response = response.data.data;
+                    this.sendDataToPanel();
                 } catch (error) {
                     console.error('Error fetching player data:', error);
                 }
@@ -185,6 +190,9 @@
             },
             differenceInDays(date1, date2) {
                 return dayjs(date2).diff(dayjs(date1), 'day');
+            },
+            changeSkin(id) {
+                EventBus.$emit('update-skin', id);
             },
             executeType(type) {
                 switch(type) {
@@ -298,10 +306,22 @@
                     default:
                         return 'default';
                 }
+            },
+            sendDataToPanel() {
+                const data = {
+                    response: this.response
+                };
+                EventBus.$emit('dataFromPlayerList', data);
             }
         },
         created() {
             this.fetchPlayerList();
+            EventBus.$on('dataFromPlayerListPanel', (data) => {
+                this.receivedData = data;
+            });
+        },
+        beforeDestory() {
+            EventBus.$off('dataFromPlayerListPanel');
         }
     }
 </script>
@@ -360,6 +380,7 @@
 
             .hydcwiki-player-table__avatar {
                 position: relative;
+                cursor: pointer;
 
                 img {
                     $avatar-value-length: 40px;

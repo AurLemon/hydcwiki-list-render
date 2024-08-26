@@ -7,34 +7,34 @@
 <script>
     /* eslint-disable */
 
-    import PlayerList from '@/components/list/player/PlayerList.vue';
-    import EnterpriseList from '@/components/list/enterprise/EnterpriseList.vue';
+    import PlayerListContainer from '@/components/list/player/PlayerListContainer.vue';
+    import EnterpriseListContainer from '@/components/list/enterprise/EnterpriseListContainer.vue';
 
     export default {
         name: 'TableContainer',
         data() {
             return {
                 pageName: '',
-                currentComponent: PlayerList
+                currentComponent: PlayerListContainer
             }
         },
         components: {
-            PlayerList,
-            EnterpriseList
+            PlayerListContainer,
+            EnterpriseListContainer
         },
         created() {
             if (typeof mw !== 'undefined' && mw.config) {
                 this.pageName = mw.config.get('wgPageName');
                 if (this.pageName === '玩家列表') {
-                    this.currentComponent = PlayerList;
+                    this.currentComponent = PlayerListContainer;
                 } else if (this.pageName === '企业列表') {
-                    this.currentComponent = EnterpriseList;
+                    this.currentComponent = EnterpriseListContainer;
                 } else {
                     console.warn(`'${this.pageName}' 页面未定义组件。`);
                 }
             } else {
-                console.warn('mw.config is not available, defaulting to PlayerList');
-                this.currentComponent = PlayerList;
+                console.warn('mw.config is not available, defaulting to PlayerListContainer');
+                this.currentComponent = PlayerListContainer;
             }
         }
     }
