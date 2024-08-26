@@ -19,7 +19,7 @@
                         <div class="hydcwiki-player-table-wrapper">
                             状态
                             <span class="material-icons"
-                                content="状态包含玩家类型、玩家状态和玩家权限组与玩家编号（PIIC）。"
+                                content="状态包含玩家类型、玩家状态和玩家权限组与玩家标识码（PIIC）。"
                                 v-tippy="{ placement: 'left', interactive: true }"
                             >info</span>
                         </div>
@@ -88,7 +88,7 @@
                                 >{{ executePerGroup(player.per_group) }}</div>
                                 <div class="dot"></div>
                                 <div class="hydcwiki-player-table__piic"
-                                    content="玩家身份标识编码（PIIC）"
+                                    content="玩家标识码"
                                     v-tippy="{ appendTo: 'parent', placement: 'bottom', interactive: true }"
                                 >
                                     {{ player.piic }}
@@ -117,8 +117,32 @@
                         </div>
                     </td>
                     <td class="hydcwiki-player-table__contact">
-                        <div class="hydcwiki-player-table-wrapper">
-
+                        <div class="hydcwiki-player-table-wrapper" :class="{ disabled: player.is_hidden_contact }">
+                            <span class="icon qq" :class="{ none: player.contact.qq === null }"
+                                :content="player.contact.qq !== null ? player.contact.qq : '无'"
+                                v-tippy="{ appendTo: 'parent', interactive: true }"
+                                v-clipboard:copy="player.contact.qq !== null ? player.contact.qq : '无'"
+                            ></span>
+                            <span class="icon wechat" :class="{ none: player.contact.wechat === null }"
+                                :content="player.contact.wechat !== null ? player.contact.wechat : '无'"
+                                v-tippy="{ appendTo: 'parent', interactive: true }"
+                                v-clipboard:copy="player.contact.wechat !== null ? player.contact.wechat : '无'"
+                            ></span>
+                            <span class="icon bilibili" :class="{ none: player.contact.bilibili === null }"
+                                :content="player.contact.bilibili !== null ? player.contact.bilibili : '无'"
+                                v-tippy="{ appendTo: 'parent', interactive: true }"
+                                v-clipboard:copy="player.contact.bilibili !== null ? player.contact.bilibili : '无'"
+                            ></span>
+                            <span class="material-icons email" :class="{ none: player.contact.email === null }"
+                                :content="player.contact.email !== null ? player.contact.email : '无'"
+                                v-tippy="{ appendTo: 'parent', interactive: true }"
+                                v-clipboard:copy="player.contact.email !== null ? player.contact.email : '无'"
+                            >email</span>
+                            <span class="material-icons others" :class="{ none: player.contact.others === null }"
+                                :content="player.contact.others !== null ? player.contact.others : '无'"
+                                v-tippy="{ appendTo: 'parent', interactive: true }"
+                                v-clipboard:copy="player.contact.others !== null ? player.contact.others : '无'"
+                            >more_horiz</span>
                         </div>
                     </td>
                 </tr>
@@ -146,7 +170,7 @@
         methods: {
             async fetchPlayerList() {
                 try {
-                    const response = await get('/info/list/player?limit=300');
+                    const response = await get('/info/list/player');
                     this.serverDate = dayjs(response.data.timestamp * 1000).format('YYYY-MM-DD');
                     this.players = response.data.data.list;
                 } catch (error) {
@@ -581,7 +605,7 @@
                 .hydcwiki-player-table-wrapper {
                     display: flex;
                     align-items: center;
-                    gap: 4px;
+                    gap: 6px;
 
                     .diff {
                         color: var(--color-surface-0);
@@ -592,8 +616,99 @@
                         cursor: pointer;
                     }
 
-                    &.both .diff {
-                        background-color: var(--color-player-list-status-leave);
+                    &.both {
+                        .diff {
+                            background-color: var(--color-player-list-status-leave);
+                        }
+                    }
+                }
+            }
+
+            .hydcwiki-player-table__contact {
+                .hydcwiki-player-table-wrapper {
+                    display: flex;
+                    gap: 4px;
+
+                    .icon, .material-icons  {
+                        $icon-value-length: 16px;
+                        display: flex;
+                        justify-content: center;
+                        color: var(--color-base--subtle);
+                        font-size: $icon-value-length;
+                        width: $icon-value-length;
+                        height: $icon-value-length;
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                        background-position: center;
+                        position: relative;
+                        cursor: pointer;
+                        user-select: none;
+
+                        &.none {
+                            filter: grayscale(1);
+                            pointer-events: none;
+
+                            &::before {
+                                content: none;
+                            }
+                        }
+
+                        &::before {
+                            content: 'content_copy';
+                            color: var(--color-base);
+                            font-size: 14px;
+                            font-family: "Material Icons";
+                            padding: 4px;
+                            border: 1px solid var(--border-color-base);
+                            border-radius: 50%;
+                            background: var(--color-surface-2);
+                            position: absolute;
+                            top: calc(100% + 0px);
+                            opacity: 0;
+                            transition: opacity 250ms ease, top 350ms ease;
+                        }
+
+                        &:hover {
+                            &::before {
+                                opacity: 0.6;
+                                top: calc(100% + 12px);
+                            }
+                        }
+
+                        &:active {
+                            &::before {
+                                content: 'done';
+                                color: var(--color-surface-0);
+                                background: var(--color-primary);
+                            }
+                        }
+                    }
+
+                    .icon {
+                        &.qq {
+                            background-image: url('@/assets/images/QQ_logo.svg');
+                        }
+
+                        &.wechat {
+                            background-image: url('@/assets/images/WeChat_logo.svg');
+                        }
+
+                        &.bilibili {
+                            background-image: url('@/assets/images/bilibili_logo.svg');
+                        }
+                    }
+
+                    &.disabled {
+                        cursor: not-allowed;
+                        
+                        .icon, .material-icons {
+                            opacity: 0.3;
+                            pointer-events: none;
+
+                            &::before {
+                                content: none;
+                            }
+                        }
                     }
                 }
             }

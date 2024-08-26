@@ -22,13 +22,13 @@
                 this.icon = 'done';
                 setTimeout(() => {
                     this.icon = 'content_copy';
-                }, 3000);
+                }, 1500);
             },
             onCopyError() {
                 this.icon = 'close';
                 setTimeout(() => {
                     this.icon = 'content_copy';
-                }, 3000);
+                }, 1500);
             }
         }
     };
