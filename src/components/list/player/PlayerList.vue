@@ -24,11 +24,20 @@
                             >info</span>
                         </div>
                     </th>
-                    <th class="hydcwiki-player-table-head__time">
+                    <th class="hydcwiki-player-table-head__time" v-if="isLoaded && receivedData.listRenderData.show.jointime">
                         <div class="hydcwiki-player-table-wrapper">入服时间</div>
                     </th>
-                    <th class="hydcwiki-player-table-head__contact">
+                    <th class="hydcwiki-player-table-head__contact" v-if="isLoaded && receivedData.listRenderData.show.contact">
                         <div class="hydcwiki-player-table-wrapper">联系方式</div>
+                    </th>
+                    <th class="hydcwiki-player-table-head__lastlogin" v-if="isLoaded && receivedData.listRenderData.show.lastlogin">
+                        <div class="hydcwiki-player-table-wrapper">
+                            最近登录
+                            <span class="material-icons"
+                                content="根据玩家绑定的主ID为查询依据，只有登录才会被记录。"
+                                v-tippy="{ placement: 'left', interactive: true }"
+                            >info</span>
+                        </div>
                     </th>
                 </tr>
                 <tr class="hydcwiki-player-table-content" v-for="player in players" :key="player.piic">
@@ -55,12 +64,16 @@
                     <td class="hydcwiki-player-table__status">
                         <div class="hydcwiki-player-table-wrapper">
                             <div class="hydcwiki-player-table__personal">
-                                <div class="hydcwiki-player-table__playertype" v-if="!(player.status === 2 || player.status === 3)">
+                                <div class="hydcwiki-player-table__playertype"
+                                    v-if="!(player.status === 2 || player.status === 3)"
+                                    v-show="isLoaded && receivedData.listRenderData.show.type"
+                                >
                                     <div :class="`type ${getTypeClass(player.type)}`"></div>
                                     <div class="text">{{ executeType(player.type) }}</div>
                                 </div>
                                 <div class="hydcwiki-player-table__playerstatus" 
                                     v-if="!(player.status === 0)"
+                                    v-show="isLoaded && receivedData.listRenderData.show.status"
                                     :class="{
                                         pointer: (player.status === 2 || player.status === 3) &&
                                         player.leave_reason !== null
@@ -97,7 +110,7 @@
                             </div>
                         </div>
                     </td>
-                    <td class="hydcwiki-player-table__time">
+                    <td class="hydcwiki-player-table__time" v-if="isLoaded && receivedData.listRenderData.show.jointime">
                         <div class="hydcwiki-player-table-wrapper both" v-if="player.leavetime !== null">
                             <div class="diff"
                                 content="在服内待过的时间"
@@ -116,7 +129,7 @@
                             <div class="hydcwiki-player-table__jointime">{{ player.jointime }}</div>
                         </div>
                     </td>
-                    <td class="hydcwiki-player-table__contact">
+                    <td class="hydcwiki-player-table__contact" v-if="isLoaded && receivedData.listRenderData.show.contact">
                         <div class="hydcwiki-player-table-wrapper" :class="{ disabled: player.is_hidden_contact }">
                             <span class="icon qq" :class="{ none: player.contact.qq === null }"
                                 :content="player.contact.qq !== null ? player.contact.qq : '无'"
@@ -145,6 +158,9 @@
                             >more_horiz</span>
                         </div>
                     </td>
+                    <td class="hydcwiki-player-table__lastlogin" v-if="isLoaded && receivedData.listRenderData.show.lastlogin">
+                        {{ player.lastlogin === null ? '无记录' : formatDate(player.lastlogin) }}
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -157,6 +173,7 @@
 
     import { EventBus } from '@/services/player/event-bus'
     import CopyButton from '@/components/common/CopyButton.vue'
+    import { debounce } from '@/utils/debounce'
 
     export default {
         data() {
@@ -164,24 +181,58 @@
                 serverDate: null,
                 players: [],
                 response: {},
-                receivedData: {}
+                receivedData: {},
+                isLoaded: false,
+                lastOffset: null
             }
         },
         components: {
             CopyButton
         },
         methods: {
-            async fetchPlayerList() {
+            async fetchPlayerList(params = {}, callback) {
                 try {
-                    const response = await get('/info/list/player');
+                    const response = await get('/info/list/player', params);
                     this.serverDate = dayjs(response.data.timestamp * 1000).format('YYYY-MM-DD');
                     this.players = response.data.data.list;
                     this.response = response.data.data;
                     this.sendDataToPanel();
+
+                    if (typeof callback === 'function') {
+                        callback(this.response);
+                    }
                 } catch (error) {
                     console.error('Error fetching player data:', error);
                 }
             },
+            updateFilterList: debounce(function() {
+                let params = {
+                    sort: this.receivedData.listRenderData.sort,
+                    sort_column: this.receivedData.listRenderData.sort_column
+                };
+                this.fetchPlayerList(params);
+            }, 300),
+            nextPage: debounce(function() {
+                this.lastOffset = this.response.offset;
+                let params = {
+                    offset: this.response.offset,
+                    sort: this.receivedData.listRenderData.sort !== null ? this.receivedData.listRenderData.sort : null,
+                    sort_column: this.receivedData.listRenderData.sort_column !== null ? this.receivedData.listRenderData.sort_column : null
+                };
+                this.fetchPlayerList(params, () => {
+                    this.receivedData.listRenderData.currentPage++;
+                })
+            }, 300),
+            prevPage: debounce(function() {
+                let params = {
+                    offset: this.lastOffset,
+                    sort: this.receivedData.listRenderData.sort !== null ? this.receivedData.listRenderData.sort : null,
+                    sort_column: this.receivedData.listRenderData.sort_column !== null ? this.receivedData.listRenderData.sort_column : null
+                };
+                this.fetchPlayerList(params, () => {
+                    this.receivedData.listRenderData.currentPage--;
+                })
+            }, 300),
             formatDate(timestamp) {
                 if (timestamp === null) 
                     return null;
@@ -318,10 +369,17 @@
             this.fetchPlayerList();
             EventBus.$on('dataFromPlayerListPanel', (data) => {
                 this.receivedData = data;
+                this.isLoaded = true;
             });
+            EventBus.$on('update-list', this.updateFilterList);
+            EventBus.$on('next-page', this.nextPage);
+            EventBus.$on('prev-page', this.prevPage);
         },
         beforeDestory() {
             EventBus.$off('dataFromPlayerListPanel');
+            EventBus.$off('update-list', this.updateFilterList);
+            EventBus.$off('next-page', this.nextPage);
+            EventBus.$off('prev-page', this.prevPage);
         }
     }
 </script>
@@ -330,7 +388,7 @@
     @import url(@/assets/styles/table.scss);
 
     .hydcwiki-list-table {
-        flex: 1;
+        width: 100%;
         overflow-x: auto;
     }
 
@@ -358,9 +416,9 @@
 
                 .material-icons {
                     display: block;
-                    color: var(--color-base);
+                    color: var(--color-surface-0);
                     font-size: 14px;
-                    opacity: 0.2;
+                    opacity: 0.4;
                     cursor: pointer;
                 }
             }
@@ -374,8 +432,7 @@
             .hydcwiki-player-table__index {
                 $index-value-padding: 14px;
                 color: var(--color-base--subtle);
-                font-size: 22px;
-                font-weight: 600;
+                font-size: 16px;
                 text-align: center;
                 padding: 0 $index-value-padding;
             }
@@ -725,7 +782,7 @@
                         cursor: not-allowed;
                         
                         .icon, .material-icons {
-                            opacity: 0.3;
+                            opacity: 0.15;
                             pointer-events: none;
 
                             &::before {
@@ -734,6 +791,10 @@
                         }
                     }
                 }
+            }
+
+            .hydcwiki-player-table__lastlogin {
+                white-space: nowrap;
             }
         }
     }

@@ -1,5 +1,5 @@
 <template>
-    <div class="hydcwiki-list">
+    <div class="hydcwiki-list-render-container">
         <component :is="currentComponent" />
     </div>
 </template>

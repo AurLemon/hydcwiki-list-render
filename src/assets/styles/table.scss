@@ -1,8 +1,8 @@
 .wikitable.tablelist {
     padding-bottom: 1rem;
-    margin-top: 0 !important;
-    border-color: transparent;
+    margin-top: 0;
     border-radius: 0;
+    border-color: transparent;
     line-height: normal;
 
     tr {
@@ -14,29 +14,29 @@
         }
 
         th {
-            color: var(--color-base--subtle);
+            color: var(--color-surface-0);
             font-size: 13px;
             padding: var(--space-xxs) var(--space-xs);
-            background: var(--color-surface-2);
+            background: hsla(var(--color-primary__h), var(--color-primary__s), var(--color-primary__l), 85%);
 
-            &:first-child {
+            &:first-child, &:first-of-type {
                 border-top-left-radius: var(--border-radius--pill) !important;
                 border-bottom-left-radius: var(--border-radius--pill) !important;
             }
     
-            &:last-child{
+            &:last-child, &:last-of-type {
                 border-top-right-radius: var(--border-radius--pill) !important;
                 border-bottom-right-radius: var(--border-radius--pill) !important;
             }
         }
 
         td {
-            &:first-child {
+            &:first-child, &:first-of-type {
                 border-top-left-radius: var(--border-radius--medium) !important;
                 border-bottom-left-radius: var(--border-radius--medium) !important;
             }
 
-            &:last-child {
+            &:last-child, &:last-of-type {
                 border-top-right-radius: var(--border-radius--medium) !important;
                 border-bottom-right-radius: var(--border-radius--medium) !important;
             }

@@ -1,9 +1,104 @@
 <template>
     <div class="hydcwiki-list-panel">
+        <div class="hydcwiki-player-panel-card hydcwiki-player-panel__control">
+            <div class="hydcwiki-player-panel__pages" v-if="isLoaded">
+                <div class="hydcwiki-player-panel__current">{{ listRenderData.currentPage }}</div>
+                <div class="dash"></div>
+                <div class="hydcwiki-player-panel__max">{{ (receivedData.response.statistics.total % receivedData.response.list.length) + 1 }}</div>
+            </div>
+            <div class="hydcwiki-player-panel__arrows">
+                <div class="hydcwiki-player-panel__arrow hydcwiki-player-panel__left" @click="prevPage">
+                    <span class="material-icons">chevron_left</span>
+                </div>
+                <div class="hydcwiki-player-panel__arrow hydcwiki-player-panel__right" @click="nextPage">
+                    <span class="material-icons">chevron_right</span>
+                </div>
+            </div>
+        </div>
         <div class="hydcwiki-player-panel-card hydcwiki-player-panel__filter">
-            <div class="hydcwiki-player-panel__title">
-                <span class="material-icons">table_chart</span>
-                筛选
+            <div class="hydcwiki-player-panel-info">
+                <div class="hydcwiki-player-panel__desc">
+                    <span class="material-icons">table_chart</span>
+                    显示字段
+                </div>
+                <div class="hydcwiki-player-panel-wrapper hydcwiki-player-panel__showcolumns">
+                    <label>
+                        <input type="checkbox" v-model="listRenderData.show.type">
+                        玩家类型
+                    </label>
+                    <label>
+                        <input type="checkbox" v-model="listRenderData.show.status">
+                        玩家状态
+                    </label>
+                    <label>
+                        <input type="checkbox" v-model="listRenderData.show.jointime">
+                        入服时间
+                    </label>
+                    <label>
+                        <input type="checkbox" v-model="listRenderData.show.contact">
+                        联系方式
+                    </label>
+                    <label>
+                        <input type="checkbox" v-model="listRenderData.show.lastlogin">
+                        最近登录
+                    </label>
+                </div>
+            </div>
+            <div class="hydcwiki-player-panel-info">
+                <div class="hydcwiki-player-panel__desc">
+                    <span class="material-icons">merge_type</span>
+                    排序字段
+                </div>
+                <div class="hydcwiki-player-panel-wrapper hydcwiki-player-panel__sort">
+                    <label @click="updateListRender">
+                        <input type="radio" value="piic" v-model="listRenderData.sort_column">
+                        玩家编号
+                    </label>
+                    <label @click="updateListRender">
+                        <input type="radio" value="id" v-model="listRenderData.sort_column">
+                        ID
+                    </label>
+                    <label @click="updateListRender">
+                        <input type="radio" value="nick" v-model="listRenderData.sort_column">
+                        玩家昵称
+                    </label>
+                    <label @click="updateListRender">
+                        <input type="radio" value="type" v-model="listRenderData.sort_column">
+                        玩家类型
+                    </label>
+                    <label @click="updateListRender">
+                        <input type="radio" value="status" v-model="listRenderData.sort_column">
+                        玩家状态
+                    </label>
+                    <label @click="updateListRender">
+                        <input type="radio" value="jointime" v-model="listRenderData.sort_column">
+                        入服时间
+                    </label>
+                    <label @click="updateListRender">
+                        <input type="radio" value="leavetime" v-model="listRenderData.sort_column">
+                        退服时间
+                    </label>
+                    <label @click="updateListRender">
+                        <input type="radio" value="lastlogin" v-model="listRenderData.sort_column">
+                        最近登录
+                    </label>
+                </div>
+            </div>
+            <div class="hydcwiki-player-panel-info">
+                <div class="hydcwiki-player-panel__desc">
+                    <span class="material-icons">view_column</span>
+                    排序方式
+                </div>
+                <div class="hydcwiki-player-panel-wrapper hydcwiki-player-panel__sort">
+                    <label @click="updateListRender">
+                        <input type="radio" value="desc" v-model="listRenderData.sort">
+                        降序
+                    </label>
+                    <label @click="updateListRender">
+                        <input type="radio" value="asc" v-model="listRenderData.sort">
+                        升序
+                    </label>
+                </div>
             </div>
         </div>
         <div class="hydcwiki-player-panel-card hydcwiki-player-panel__overview">
@@ -63,6 +158,24 @@
         name: 'PlayerListPanel',
         data() {
             return {
+                listRenderData: {
+                    currentPage: 1,
+                    show: {
+                        index: true,
+                        avatar: true,
+                        id: true,
+                        nick: true,
+                        type: true,
+                        status: true,
+                        per_group: true,
+                        piic: true,
+                        jointime: true,
+                        contact: true,
+                        lastlogin: false
+                    },
+                    sort: 'asc',
+                    sort_column: 'piic'
+                },
                 skinViewer: Object,
                 sharedData: {},
                 receivedData: {},
@@ -95,17 +208,33 @@
             handleUpdateSkin(piic) {
                 this.skinShowPlayerInfo = this.receivedData.response.list.find(player => player.piic === piic);
                 this.skinViewer.loadSkin('https://minotar.net/skin/' + this.skinShowPlayerInfo.id);
-                console.info(this.skinShowPlayerInfo);                
             },
             sendDataToList() {
-                const data = {};
+                const data = {
+                    listRenderData: this.listRenderData
+                };
                 EventBus.$emit('dataFromPlayerListPanel', data);
+            },
+            updateListRender(renderData) {
+                EventBus.$emit('update-list', renderData);
+            },
+            nextPage() {
+                this.currentPage++;
+                EventBus.$emit('next-page');
+            },
+            prevPage() {
+                this.currentPage--;
+                EventBus.$emit('prev-page');
             },
             handlePlayerShowClick() {
                 this.playerShowClick ? (
                     this.playerShowClick = false,
-                    this.skinViewer.zoom = 1
-                ) : this.playerShowClick = true;
+                    this.skinViewer.zoom = 1,
+                    this.skinViewer.autoRotate = true
+                ) : (
+                    this.playerShowClick = true,
+                    this.skinViewer.autoRotate = false
+                );
             }
         },
         mounted() {
@@ -118,9 +247,10 @@
                 this.loadSkinViewer();
 
                 if (typeof this.receivedData.changeSkin === 'function') {
-                    const someId = this.skinShowInfo.id;
-                    this.receivedData.changeSkin(someId);
+                    this.receivedData.changeSkin(this.skinShowInfo.id);
                 }
+
+                this.sendDataToList();
             });
             EventBus.$on('update-skin', this.handleUpdateSkin);
         },
@@ -140,6 +270,7 @@
         flex-shrink: 0;
         gap: 1rem;
         width: 120px;
+        margin-top: 36px;
 
         .hydcwiki-player-panel__title {
             display: flex;
@@ -170,15 +301,117 @@
         }
 
         .hydcwiki-player-panel__value {
-            color: var(--color-base--emphasized);
             font-size: 32px;
-            font-weight: 600;
+            font-weight: 500;
         }
 
         .hydcwiki-player-panel__label {
             color: var(--color-base--subtle);
             font-size: 12px;
             line-height: 1;
+        }
+    }
+
+    .hydcwiki-player-panel__control {
+        padding: 0 !important;
+        border-color: transparent !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        gap: 2px !important;
+
+        .hydcwiki-player-panel__pages {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 6px;
+            color: var(--color-base--subtle);
+            font-size: 24px;
+            font-weight: bold;
+
+            .hydcwiki-player-panel__current {
+                font-size: 46px;
+            }
+
+            .dash {
+                &::after {
+                    content: '/';
+                }
+            }
+        }
+
+        .hydcwiki-player-panel__arrows {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+
+            .hydcwiki-player-panel__arrow {
+                color: var(--color-base);
+                padding: 3px;
+                border-radius: var(--border-radius--large);
+                background: var(--color-surface-3);
+                cursor: pointer;
+                transition: all 150ms ease;
+
+                .material-icons {
+                    display: block;
+                    font-size: 18px;
+                }
+
+                &:hover {
+                    color: var(--color-surface-0);
+                    background: var(--color-primary);
+                }
+
+                &:active {
+                    transform: scale(0.9);
+                }
+            }
+        }
+    }
+    
+    .hydcwiki-player-panel__filter {
+        &.hydcwiki-player-panel-card {
+            gap: 1rem;
+        }
+
+        .hydcwiki-player-panel-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .hydcwiki-player-panel-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+
+            label {
+                display: inline-flex;
+                align-items: center;
+                gap: 2px;
+                font-size: 14px;
+            }
+
+            &.hydcwiki-player-panel__sort {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+        }
+
+        .hydcwiki-player-panel__desc {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--color-base--subtle);
+            font-size: 12px;
+            opacity: 0.6;
+            user-select: none;
+
+            .material-icons {
+                font-size: 16px
+            }
         }
     }
 

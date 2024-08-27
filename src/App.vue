@@ -1,16 +1,19 @@
 <template>
     <div id="app">
         <TableContainer />
+        <ListFooter />
     </div>
 </template>
 
 <script>
     import TableContainer from '@/components/TableContainer.vue'
+    import ListFooter from '@/components/ListFooter.vue';
 
     export default {
         name: 'App',
         components: {
-            TableContainer
+            TableContainer,
+            ListFooter
         }
     }
 </script>
