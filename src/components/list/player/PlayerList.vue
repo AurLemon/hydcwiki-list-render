@@ -35,7 +35,7 @@
                     <td class="hydcwiki-player-table__index">{{ player.index }}</td>
                     <td class="hydcwiki-player-table__info">
                         <div class="hydcwiki-player-table-wrapper">
-                            <div class="hydcwiki-player-table__avatar" @click="changeSkin(player.id)">
+                            <div class="hydcwiki-player-table__avatar" @click="changeSkin(player.piic)">
                                 <div class="hydcwiki-player-table__islogged" v-if="player.is_logged"
                                     :content="`在线（最近一次登录：${ formatDate(player.lastlogin === null ? '未知' : player.lastlogin) }）`"
                                     v-tippy="{ placement: 'left', interactive: true }"
@@ -191,8 +191,8 @@
             differenceInDays(date1, date2) {
                 return dayjs(date2).diff(dayjs(date1), 'day');
             },
-            changeSkin(id) {
-                EventBus.$emit('update-skin', id);
+            changeSkin(piic) {
+                EventBus.$emit('update-skin', piic);
             },
             executeType(type) {
                 switch(type) {
@@ -329,21 +329,23 @@
 <style lang="scss" scoped>
     @import url(@/assets/styles/table.scss);
 
+    .hydcwiki-list-table {
+        flex: 1;
+        overflow-x: auto;
+    }
+
     .hydcwiki-player-table {
         --color-player-list-type-normal: #3791be;
         --color-player-list-type-unconfirm: #efc51b;
-
         --color-player-list-status-regular: #0fda7f;
         --color-player-list-status-active: #3791be;
         --color-player-list-status-leave: #fc7985;
         --color-player-list-status-kick: #af1a1a;
         --color-player-list-status-hibernate: #3791be;
-
         --color-player-list-pergroup-level-0: #c41111;
         --color-player-list-pergroup-level-1: #3791be;
         --color-player-list-pergroup-level-2: #3366cc;
         --color-player-list-pergroup-level-3: #1a8d00;
-
         --color-player-list-islogged: #008000;
 
         .hydcwiki-player-table-head {
@@ -358,7 +360,7 @@
                     display: block;
                     color: var(--color-base);
                     font-size: 14px;
-                    opacity: 0.3;
+                    opacity: 0.2;
                     cursor: pointer;
                 }
             }

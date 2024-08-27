@@ -1,7 +1,16 @@
 <template>
     <div class="hydcwiki-list-panel">
+        <div class="hydcwiki-player-panel-card hydcwiki-player-panel__filter">
+            <div class="hydcwiki-player-panel__title">
+                <span class="material-icons">table_chart</span>
+                筛选
+            </div>
+        </div>
         <div class="hydcwiki-player-panel-card hydcwiki-player-panel__overview">
-            <div class="hydcwiki-player-panel__title"><span class="material-icons">info</span> 概览</div>
+            <div class="hydcwiki-player-panel__title">
+                <span class="material-icons">info</span>
+                概览
+            </div>
             <div class="hydcwiki-player-panel-wrapper">
                 <div class="hydcwiki-player-panel__data" v-if="isLoaded">
                     <div class="hydcwiki-player-panel__value">{{ receivedData.response.statistics.total }}</div>
@@ -25,11 +34,20 @@
                 </div>
             </div>
         </div>
-        <div class="hydcwiki-player-panel-card hydcwiki-player-panel__playershow">
-            <div class="hydcwiki-player-panel__playershow__background"></div>
-            <div class="hydcwiki-player-panel__playershow__foreground">
+        <div class="hydcwiki-player-panel-card hydcwiki-player-panel__playershow" :class="{ click: playerShowClick }" @click="handlePlayerShowClick">
+            <div class="hydcwiki-player-panel__title">
+                <span class="material-icons">crop_rotate</span>
+                模型
+            </div>
+            <div class="hydcwiki-player-panel__playershow__background">
                 <div class="hydcwiki-player-panel__playershow__canvas">
                     <canvas id="player-show-container"></canvas>
+                </div>
+            </div>
+            <div class="hydcwiki-player-panel__playershow__foreground">
+                <div class="hydcwiki-player-panel__playershow__info">
+                    <div class="hydcwiki-player-panel__playershow__nick">{{ skinShowPlayerInfo.nick }}</div>
+                    <div class="hydcwiki-player-panel__playershow__id">{{ skinShowPlayerInfo.id }}</div>
                 </div>
             </div>
         </div>
@@ -49,7 +67,8 @@
                 sharedData: {},
                 receivedData: {},
                 isLoaded: false,
-                skinShowInfo: {}
+                skinShowPlayerInfo: {},
+                playerShowClick: false
             }
         },
         methods: {
@@ -66,19 +85,27 @@
             },
             loadSkinViewer() {
                 if (this.isLoaded === true && this.receivedData.response?.list?.length) {
-                    this.skinShowInfo = this.receivedData.response.list[
+                    this.skinShowPlayerInfo = this.receivedData.response.list[
                         Math.floor(Math.random() * this.receivedData.response.list.length)
                     ];
 
-                    this.skinViewer.loadSkin('https://minotar.net/skin/' + this.skinShowInfo.id)
+                    this.skinViewer.loadSkin('https://minotar.net/skin/' + this.skinShowPlayerInfo.id)
                 }
             },
-            handleUpdateSkin(id) {
-                this.skinViewer.loadSkin('https://minotar.net/skin/' + id)
+            handleUpdateSkin(piic) {
+                this.skinShowPlayerInfo = this.receivedData.response.list.find(player => player.piic === piic);
+                this.skinViewer.loadSkin('https://minotar.net/skin/' + this.skinShowPlayerInfo.id);
+                console.info(this.skinShowPlayerInfo);                
             },
             sendDataToList() {
                 const data = {};
                 EventBus.$emit('dataFromPlayerListPanel', data);
+            },
+            handlePlayerShowClick() {
+                this.playerShowClick ? (
+                    this.playerShowClick = false,
+                    this.skinViewer.zoom = 1
+                ) : this.playerShowClick = true;
             }
         },
         mounted() {
@@ -93,7 +120,6 @@
                 if (typeof this.receivedData.changeSkin === 'function') {
                     const someId = this.skinShowInfo.id;
                     this.receivedData.changeSkin(someId);
-                    console.log(this.receivedData);
                 }
             });
             EventBus.$on('update-skin', this.handleUpdateSkin);
@@ -106,19 +132,23 @@
 </script>
 
 <style lang="scss" scoped>
+    $panel-value-padding: 12px;
+    
     .hydcwiki-list-panel {
         display: flex;
         flex-direction: column;
+        flex-shrink: 0;
         gap: 1rem;
-        min-width: 120px;
+        width: 120px;
 
         .hydcwiki-player-panel__title {
             display: flex;
             align-items: center;
-            gap: 2px;
+            gap: 4px;
             color: var(--color-base--subtle);
             font-size: 12px;
             opacity: 0.6;
+            user-select: none;
 
             .material-icons {
                 font-size: 16px;
@@ -130,11 +160,13 @@
             flex-direction: column;
             gap: 8px;
             width: 100%;
-            padding: 12px;
+            padding: $panel-value-padding;
             background: var(--color-surface-2);
             border: 1px solid var(--border-color-subtle);
             border-radius: var(--border-radius--large);
+            outline: 2px solid transparent;
             box-shadow: var(--box-shadow-card);
+            transition: all 300ms ease;
         }
 
         .hydcwiki-player-panel__value {
@@ -159,9 +191,23 @@
     }
 
     .hydcwiki-player-panel__playershow {
+        $canvas-value-width: 110px;
+        $canvas-value-height: 180px;
+        $canvas-value-click-duration: 450ms;
         padding: 0 !important;
+        min-height: $canvas-value-height + 20px;
         position: relative;
         overflow: hidden;
+        cursor: pointer;
+        user-select: none;
+
+        .hydcwiki-player-panel__title {
+            position: absolute;
+            top: $panel-value-padding;
+            left: $panel-value-padding;
+            z-index: 20;
+            transition: all $canvas-value-click-duration ease;
+        }
 
         .hydcwiki-player-panel__playershow__background {
             width: 100%;
@@ -170,29 +216,87 @@
             left: 0;
             right: 0;
             bottom: 0;
-        }
+            z-index: 20;
+            filter: drop-shadow(0 1px 6px var(--h2-bgColor-dark--0));
 
-        .hydcwiki-player-panel__playershow__foreground {
             .hydcwiki-player-panel__playershow__canvas {
                 display: flex;
                 justify-content: center;
+                align-items: center;
                 width: 100%;
                 height: 100%;
 
                 canvas {
-                    width: 110px !important;
-                    height: 180px !important;
-                    filter: opacity(0.9);
-                    transform: rotate(-25deg) translate(20px, 40px);
-                    transition: all 450ms ease;
+                    width: 100% !important;
+                    height: 100% !important;
+                    transform: rotate(-25deg) translate(15px, 35px);
+                    transition: all $canvas-value-click-duration ease;
+                    pointer-events: none;
                 }
             }
         }
 
+        .hydcwiki-player-panel__playershow__foreground {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: $panel-value-padding;
+            height: 100%;
+            z-index: 10;
+
+            .hydcwiki-player-panel__playershow__info {
+                opacity: 1;
+                transition: opacity $canvas-value-click-duration ease;
+            }
+
+            .hydcwiki-player-panel__playershow__nick {
+                font-size: 18px;
+            }
+
+            .hydcwiki-player-panel__playershow__id {
+                color: var(--color-base--subtle);
+                font-size: 12px;
+                font-family: 'Minecraft';
+                line-height: 1;
+            }
+        }
+
         &:hover {
-            .hydcwiki-player-panel__playershow__canvas canvas {
-                filter: opacity(1);
-                transform: rotate(-25deg) translate(15px, 30px);
+            outline-color: var(--color-primary);
+        }
+
+        &:active {
+            transform: scale(0.95);
+            transition-duration: 250ms;
+        }
+
+        &.click {
+            background: radial-gradient(ellipse at 5% 0%, #bf398910 0, var(--color-surface-0) 75%),
+                        radial-gradient(ellipse at 60% 0%, #096bde10 0, var(--color-surface-0) 75%);
+            
+            .hydcwiki-player-panel__title {
+                opacity: 0;
+                z-index: 5;
+            }
+
+            .hydcwiki-player-panel__playershow__foreground {
+                z-index: 1;
+
+                .hydcwiki-player-panel__playershow__info {
+                    opacity: 0;
+                    z-index: 5;
+                }
+            }
+
+            .hydcwiki-player-panel__playershow__background {
+                z-index: 5;
+
+                .hydcwiki-player-panel__playershow__canvas {
+                    canvas {
+                        transform: rotate(0deg) translate(0px, 0px);
+                        pointer-events: all;
+                    }
+                }
             }
         }
     }
