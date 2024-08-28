@@ -257,6 +257,10 @@
 
                     this.fetchPage(++this.currentPage, () => {
                         this.receivedData.listRenderData.prevPageMax = false;
+
+                        if (this.currentPage === maxPages) {
+                            this.receivedData.listRenderData.nextPageMax = true;
+                        }
                     });
                 }
             }, 300),
@@ -274,6 +278,10 @@
 
                     this.fetchPage(--this.currentPage, () => {
                         this.receivedData.listRenderData.nextPageMax = false;
+
+                        if (this.currentPage === 1) {
+                            this.receivedData.listRenderData.prevPageMax = true;
+                        }
                     });
                 }
             }, 300),
@@ -495,6 +503,18 @@
 
             .hydcwiki-player-table-head__index {
                 text-align: center;
+            }
+
+            .hydcwiki-player-table-head__info {
+                min-width: 300px;
+            }
+
+            .hydcwiki-player-table-head__status {
+                min-width: 350px;
+            }
+
+            .hydcwiki-player-table-head__time {
+                min-width: 145px;
             }
         }
 
