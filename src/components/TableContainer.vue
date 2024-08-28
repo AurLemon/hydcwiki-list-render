@@ -39,3 +39,9 @@
         }
     }
 </script>
+
+<style lang="scss" scoped>
+    .hydcwiki-list-render-container {
+        line-height: normal;
+    }
+</style>

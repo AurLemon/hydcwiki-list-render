@@ -183,7 +183,8 @@
                 response: {},
                 receivedData: {},
                 isLoaded: false,
-                lastOffset: null
+                lastOffset: null,
+                currentPage: 1
             }
         },
         components: {
@@ -206,33 +207,99 @@
                 }
             },
             updateFilterList: debounce(function() {
+                this.receivedData.listRenderData.isFetchingPage = true;
                 let params = {
                     sort: this.receivedData.listRenderData.sort,
                     sort_column: this.receivedData.listRenderData.sort_column
                 };
-                this.fetchPlayerList(params);
-            }, 300),
-            nextPage: debounce(function() {
-                this.lastOffset = this.response.offset;
-                let params = {
-                    offset: this.response.offset,
-                    sort: this.receivedData.listRenderData.sort !== null ? this.receivedData.listRenderData.sort : null,
-                    sort_column: this.receivedData.listRenderData.sort_column !== null ? this.receivedData.listRenderData.sort_column : null
-                };
                 this.fetchPlayerList(params, () => {
-                    this.receivedData.listRenderData.currentPage++;
-                })
+                    this.receivedData.listRenderData.isFetchingPage = false;
+                });
             }, 300),
-            prevPage: debounce(function() {
+            async fetchPage(page, callback) {
+                if (page < 0 || page > (this.response.page.total % this.response.page.limit) - 1) {
+                    page = 1;
+                }
+                this.receivedData.listRenderData.isFetchingPage = true;
+                this.currentPage = page;
+
                 let params = {
-                    offset: this.lastOffset,
-                    sort: this.receivedData.listRenderData.sort !== null ? this.receivedData.listRenderData.sort : null,
-                    sort_column: this.receivedData.listRenderData.sort_column !== null ? this.receivedData.listRenderData.sort_column : null
+                    page: page,
+                    sort: this.receivedData.listRenderData.sort || null,
+                    sort_column: this.receivedData.listRenderData.sort_column || null
                 };
-                this.fetchPlayerList(params, () => {
-                    this.receivedData.listRenderData.currentPage--;
-                })
+
+                try {
+                    await this.fetchPlayerList(params, () => {
+                        this.receivedData.listRenderData.isFetchingPage = false;
+                        if (typeof callback === 'function') {
+                            callback();
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error fetching player data:', error);
+                    this.receivedData.listRenderData.isFetchingPage = false;
+                }
+            },
+            nextPage: debounce(function(state) {
+                let maxPages = (this.response.page.total % this.response.page.limit) - 1;
+
+                if (state === 'max') {
+                    this.fetchPage(maxPages, () => {
+                        this.receivedData.listRenderData.nextPageMax = true;
+                        this.receivedData.listRenderData.prevPageMax = false;
+                    });
+                } else {
+                    if (this.currentPage > maxPages) {
+                        this.receivedData.listRenderData.nextPageMax = true;
+                        return;
+                    }
+
+                    this.fetchPage(++this.currentPage, () => {
+                        this.receivedData.listRenderData.prevPageMax = false;
+                    });
+                }
             }, 300),
+            prevPage: debounce(function(state) {
+                if (state === 'max') {
+                    this.fetchPage(1, () => {
+                        this.receivedData.listRenderData.prevPageMax = true;
+                        this.receivedData.listRenderData.nextPageMax = false;
+                    });
+                } else {
+                    if (this.currentPage < 1) {
+                        this.receivedData.listRenderData.prevPageMax = true;
+                        return;
+                    }
+
+                    this.fetchPage(--this.currentPage, () => {
+                        this.receivedData.listRenderData.nextPageMax = false;
+                    });
+                }
+            }, 300),
+            changePage(page) {
+                let maxPages = (this.response.page.total % this.response.page.limit) - 1;
+
+                if (page < 0 || page > (this.response.page.total % this.response.page.limit) - 1) {
+                    page = 1;
+                } else {
+                    page = 1;
+                }
+
+                this.fetchPage(page, () => {
+                    this.currentPage = page;
+                    if (page === 1) {
+                        this.receivedData.listRenderData.prevPageMax = true;
+                        this.receivedData.listRenderData.nextPageMax = false;
+                    } else if (page === maxPages) {
+                        this.receivedData.listRenderData.prevPageMax = false;
+                        this.receivedData.listRenderData.nextPageMax = true;
+                    } else {
+                        this.receivedData.listRenderData.prevPageMax = false;
+                        this.receivedData.listRenderData.nextPageMax = false;
+                    }
+                });
+            },
             formatDate(timestamp) {
                 if (timestamp === null) 
                     return null;
@@ -374,12 +441,14 @@
             EventBus.$on('update-list', this.updateFilterList);
             EventBus.$on('next-page', this.nextPage);
             EventBus.$on('prev-page', this.prevPage);
+            EventBus.$on('change-page', this.changePage);
         },
         beforeDestory() {
             EventBus.$off('dataFromPlayerListPanel');
             EventBus.$off('update-list', this.updateFilterList);
             EventBus.$off('next-page', this.nextPage);
             EventBus.$off('prev-page', this.prevPage);
+            EventBus.$off('change-page', this.changePage);
         }
     }
 </script>
