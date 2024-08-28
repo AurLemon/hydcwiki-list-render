@@ -218,7 +218,7 @@
             }, 300),
             async fetchPage(page, callback) {
                 if (page < 0 || page > (this.response.page.total % this.response.page.limit) - 1) {
-                    page = 1;
+                    page = this.currentPage;
                 }
                 this.receivedData.listRenderData.isFetchingPage = true;
                 this.currentPage = page;
@@ -289,9 +289,11 @@
                 let maxPages = (this.response.page.total % this.response.page.limit) - 1;
 
                 if (page < 0 || page > (this.response.page.total % this.response.page.limit) - 1) {
-                    page = 1;
+                    page = this.currentPage;
                 } else {
-                    page = 1;
+                    if (!/^-?\d+$/.test(page)) {
+                        page = 1;
+                    }                    
                 }
 
                 this.fetchPage(page, () => {
@@ -485,6 +487,8 @@
         --color-player-list-islogged: #008000;
 
         .hydcwiki-player-table-head {
+            filter: drop-shadow(0 2px 6px var(--h2-bgColor-dark--1));
+
             [class^="hydcwiki-player-table-head__"] {
                 .hydcwiki-player-table-wrapper {
                     display: flex;
