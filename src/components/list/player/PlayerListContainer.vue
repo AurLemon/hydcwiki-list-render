@@ -22,5 +22,9 @@
     .hydcwiki-player-list {
         display: flex;
         gap: 1.25rem;
+
+        @media screen and (max-width: 1024px) {
+            flex-direction: column-reverse;
+        }
     }
 </style>

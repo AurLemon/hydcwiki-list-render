@@ -455,6 +455,7 @@
 
 <style lang="scss" scoped>
     @import url(@/assets/styles/table.scss);
+    @import url(@/assets/styles/reset_wiki.scss);
 
     .hydcwiki-list-table {
         width: 100%;

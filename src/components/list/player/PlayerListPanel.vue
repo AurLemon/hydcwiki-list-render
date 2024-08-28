@@ -333,6 +333,10 @@
         width: 120px;
         margin-top: 36px;
 
+        @media screen and (max-width: 1024px) {
+            width: 100%;
+        }
+
         .hydcwiki-player-panel__title {
             display: flex;
             align-items: center;
@@ -537,6 +541,11 @@
             flex-direction: column;
             gap: 5px;
 
+            @media screen and (max-width: 1024px) {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
             label {
                 display: inline-flex;
                 align-items: center;
@@ -570,6 +579,11 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+
+            @media screen and (max-width: 1024px) {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
         }
     }
 
@@ -578,7 +592,7 @@
         $canvas-value-height: 180px;
         $canvas-value-click-duration: 450ms;
         padding: 0 !important;
-        min-height: $canvas-value-height + 20px;
+        height: $canvas-value-height + 20px;
         position: relative;
         overflow: hidden;
         cursor: pointer;
@@ -588,7 +602,7 @@
             position: absolute;
             top: $panel-value-padding;
             left: $panel-value-padding;
-            z-index: 20;
+            z-index: 9;
             transition: all $canvas-value-click-duration ease;
         }
 
@@ -599,7 +613,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            z-index: 20;
+            z-index: 9;
             filter: drop-shadow(0 1px 6px var(--h2-bgColor-dark--0));
 
             .hydcwiki-player-panel__playershow__canvas {
@@ -615,6 +629,10 @@
                     transform: rotate(-25deg) translate(15px, 35px);
                     transition: all $canvas-value-click-duration ease;
                     pointer-events: none;
+
+                    @media screen and (max-width: 1024px) {
+                        width: auto !important;
+                    }
                 }
             }
         }
@@ -625,7 +643,7 @@
             justify-content: flex-end;
             padding: $panel-value-padding;
             height: 100%;
-            z-index: 10;
+            z-index: 7;
 
             .hydcwiki-player-panel__playershow__info {
                 opacity: 1;
@@ -659,7 +677,7 @@
             
             .hydcwiki-player-panel__title {
                 opacity: 0;
-                z-index: 5;
+                z-index: 3;
             }
 
             .hydcwiki-player-panel__playershow__foreground {
@@ -667,12 +685,12 @@
 
                 .hydcwiki-player-panel__playershow__info {
                     opacity: 0;
-                    z-index: 5;
+                    z-index: 3;
                 }
             }
 
             .hydcwiki-player-panel__playershow__background {
-                z-index: 5;
+                z-index: 3;
 
                 .hydcwiki-player-panel__playershow__canvas {
                     canvas {
