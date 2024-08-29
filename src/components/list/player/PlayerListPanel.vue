@@ -575,6 +575,8 @@
     }
 
     .hydcwiki-player-panel__overview {
+        position: relative;
+
         .hydcwiki-player-panel-wrapper {
             display: flex;
             flex-direction: column;
