@@ -119,9 +119,9 @@
             </div>
         </div>
         <div class="hydcwiki-player-panel-card hydcwiki-player-panel__playershow" :class="{ click: playerShowClick }"
-        @mousedown="handleMouseDown"
-        @mouseup="handleMouseUp"
-        @mousemove="handleMouseMove"
+            @mousedown="handleMouseDown"
+            @mouseup="handleMouseUp"
+            @mousemove="handleMouseMove"
         >
             <div class="hydcwiki-player-panel__title">
                 <span class="material-icons">crop_rotate</span>
